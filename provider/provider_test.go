@@ -6,7 +6,6 @@ import (
 	"os"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/databrickslabs/databricks-terraform/common"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -371,8 +370,4 @@ func TestProvider_InvalidProfileGivesError(t *testing.T) {
 	p := DatabricksProvider()
 	err := p.Configure(context.Background(), terraform.NewResourceConfigRaw(raw))
 	assert.NotNil(t, err)
-}
-
-func TestProvider_DurationToSecondsString(t *testing.T) {
-	assert.Equal(t, durationToSecondsString(time.Hour), "3600")
 }
