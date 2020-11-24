@@ -1,5 +1,10 @@
 # Version changelog
 
+## 0.3.0
+
+**Behavior changes**
+* `databricks_notebook` got behavior changed
+
 ## 0.2.9
 
 * Fixed documentation issues.
