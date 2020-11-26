@@ -11,17 +11,17 @@ lint:
 	@golangci-lint run --skip-dirs-use-default --timeout 5m
 
 test: lint
-	@echo "✓ Running tests..."
+	@echo "✓ Running tests ..."
 	@gotestsum --format pkgname-and-test-fails --no-summary=skipped --raw-command go test -v -json -short -coverprofile=coverage.txt ./...
 
 coverage: test
-	@echo "✓ Opening coverage for unit tests..."
+	@echo "✓ Opening coverage for unit tests ..."
 	@go tool cover -html=coverage.txt
 
 VERSION = $(shell git describe --long --always | sed 's/v//')
 
 build:
-	@echo "✓ Building source code with go build..."
+	@echo "✓ Building source code with go build ..."
 	@go build -mod vendor -v -ldflags="-X github.com/databrickslabs/databricks-terraform/common.version=${VERSION}" -o terraform-provider-databricks
 
 install: build
@@ -42,31 +42,31 @@ install: build
 	@echo "}"
 	
 vendor:
-	@echo "✓ Filling vendor folder with library code..."
+	@echo "✓ Filling vendor folder with library code ..."
 	@go mod vendor
 
 test-azcli:
-	@echo "✓ Running Terraform Acceptance Tests for Azure..."
+	@echo "✓ Running Terraform Acceptance Tests for Azure ..."
 	@/bin/bash scripts/run.sh azcli '^(TestAcc|TestAzureAcc)' --debug --tee
 
 test-azsp:
-	@echo "✓ Running Terraform Acceptance Tests for Azure..."
+	@echo "✓ Running Terraform Acceptance Tests for Azure ..."
 	@/bin/bash scripts/run.sh azsp '^(TestAcc|TestAzureAcc)' --debug --tee
 
 test-mws:
-	@echo "✓ Running acceptance Tests for Multiple Workspace APIs on AWS..."
+	@echo "✓ Running acceptance Tests for Multiple Workspace APIs on AWS ..."
 	@/bin/bash scripts/run.sh mws '^TestMwsAcc' --debug --tee
 
 test-awsst:
-	@echo "✓ Running Terraform Acceptance Tests for AWS ST..."
+	@echo "✓ Running Terraform Acceptance Tests for AWS ST ..."
 	@/bin/bash scripts/run.sh awsst '^(TestAcc|TestAwsAcc)' --debug --tee
 
 test-awsmt:
-	@echo "✓ Running Terraform Acceptance Tests for AWS MT..."
+	@echo "✓ Running Terraform Acceptance Tests for AWS MT ..."
 	@/bin/bash scripts/run.sh awsmt '^(TestAcc|TestAwsAcc)' --debug --tee
 
 snapshot:
-	@echo "✓ Making Snapshot..."
+	@echo "✓ Making Snapshot ..."
 	@goreleaser release --rm-dist --snapshot
 
 .PHONY: build fmt python-setup docs vendor build fmt coverage test lint
