@@ -1,6 +1,8 @@
 package identity
 
 import (
+	"context"
+
 	"github.com/databrickslabs/databricks-terraform/common"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -12,7 +14,9 @@ func DataSourceDefaultUserRoles() *schema.Resource {
 			client := m.(*common.DatabricksClient)
 
 			defaultRolesUserName := d.Get("default_username").(string)
-			metaUser, err := NewUsersAPI(client).GetOrCreateDefaultMetaUser(defaultRolesUserName, defaultRolesUserName, true)
+			ctx := context.Background()
+			usersAPI := NewUsersAPI(ctx, client)
+			metaUser, err := usersAPI.GetOrCreateDefaultMetaUser(defaultRolesUserName, defaultRolesUserName, true)
 			if err != nil {
 				return err
 			}

@@ -1,6 +1,7 @@
 package acceptance
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -137,7 +138,9 @@ func testScimGroupResourceDestroy(s *terraform.State) error {
 		if rs.Type != "databricks_scim_group" {
 			continue
 		}
-		_, err := NewUsersAPI(client).Read(rs.Primary.ID)
+		ctx := context.Background()
+		usersAPI := NewUsersAPI(ctx, client)
+		_, err := usersAPI.Read(rs.Primary.ID)
 		if err != nil {
 			return nil
 		}

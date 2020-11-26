@@ -1,6 +1,7 @@
 package identity
 
 import (
+	"context"
 	"log"
 	"reflect"
 	"sort"
@@ -67,14 +68,16 @@ func resourceScimUserCreate(d *schema.ResourceData, m interface{}) error {
 		entitlements = convertInterfaceSliceToStringSlice(rEntitlements.(*schema.Set).List())
 		log.Println(entitlements)
 	}
-	user, err := NewUsersAPI(client).Create(userName, displayName, entitlements, roles)
+	ctx := context.Background()
+	usersAPI := NewUsersAPI(ctx, client)
+	user, err := usersAPI.Create(userName, displayName, entitlements, roles)
 	if err != nil {
 		return err
 	}
 
 	// Hack to fix user, for some reason if entitlements is empty it will auto create user with
 	// allow-cluster-create permissions so we will apply a put operation to overwrite the user
-	err = NewUsersAPI(client).Update(user.ID, userName, displayName, entitlements, roles)
+	err = usersAPI.Update(user.ID, userName, displayName, entitlements, roles)
 	if err != nil {
 		return err
 	}
@@ -84,7 +87,7 @@ func resourceScimUserCreate(d *schema.ResourceData, m interface{}) error {
 		if err != nil {
 			return err
 		}
-		err = NewUsersAPI(client).SetUserAsAdmin(user.ID, adminGroup.ID)
+		err = usersAPI.SetUserAsAdmin(user.ID, adminGroup.ID)
 		if err != nil {
 			return err
 		}
@@ -105,7 +108,9 @@ func getListOfRoles(roleList []RoleListItem) []string {
 func resourceScimUserRead(d *schema.ResourceData, m interface{}) error {
 	id := d.Id()
 	client := m.(*common.DatabricksClient)
-	user, err := NewUsersAPI(client).Read(id)
+	ctx := context.Background()
+	usersAPI := NewUsersAPI(ctx, client)
+	user, err := usersAPI.Read(id)
 	if err != nil {
 		if e, ok := err.(common.APIError); ok && e.IsMissing() {
 			log.Printf("missing resource due to error: %v\n", e)
@@ -119,7 +124,7 @@ func resourceScimUserRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	isAdmin, err := NewUsersAPI(client).VerifyUserAsAdmin(user.ID, adminGroup.ID)
+	isAdmin, err := usersAPI.VerifyUserAsAdmin(user.ID, adminGroup.ID)
 	if err != nil {
 		return err
 	}
@@ -191,7 +196,9 @@ func resourceScimUserUpdate(d *schema.ResourceData, m interface{}) error {
 	if rEntitlements, ok := d.GetOk("entitlements"); ok {
 		entitlements = convertInterfaceSliceToStringSlice(rEntitlements.(*schema.Set).List())
 	}
-	err := NewUsersAPI(client).Update(id, userName, displayName, entitlements, roles)
+	ctx := context.Background()
+	usersAPI := NewUsersAPI(ctx, client)
+	err := usersAPI.Update(id, userName, displayName, entitlements, roles)
 	if err != nil {
 		return err
 	}
@@ -202,7 +209,7 @@ func resourceScimUserUpdate(d *schema.ResourceData, m interface{}) error {
 			if err != nil {
 				return err
 			}
-			err = NewUsersAPI(client).SetUserAsAdmin(id, adminGroup.ID)
+			err = usersAPI.SetUserAsAdmin(id, adminGroup.ID)
 			if err != nil {
 				return err
 			}
@@ -211,7 +218,7 @@ func resourceScimUserUpdate(d *schema.ResourceData, m interface{}) error {
 			if err != nil {
 				return err
 			}
-			err = NewUsersAPI(client).RemoveUserAsAdmin(id, adminGroup.ID)
+			err = usersAPI.RemoveUserAsAdmin(id, adminGroup.ID)
 			if err != nil {
 				return err
 			}
@@ -223,7 +230,9 @@ func resourceScimUserUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceScimUserDelete(d *schema.ResourceData, m interface{}) error {
 	id := d.Id()
 	client := m.(*common.DatabricksClient)
-	err := NewUsersAPI(client).Delete(id)
+	ctx := context.Background()
+	usersAPI := NewUsersAPI(ctx, client)
+	err := usersAPI.Delete(id)
 	return err
 }
 

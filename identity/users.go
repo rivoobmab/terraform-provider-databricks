@@ -1,6 +1,7 @@
 package identity
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -13,7 +14,7 @@ import (
 )
 
 // NewUsersAPI creates UsersAPI instance from provider meta
-func NewUsersAPI(m interface{}) UsersAPI {
+func NewUsersAPI(ctx context.Context, m interface{}) UsersAPI {
 	return UsersAPI{C: m.(*common.DatabricksClient)}
 }
 

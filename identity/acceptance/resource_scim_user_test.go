@@ -1,6 +1,7 @@
 package acceptance
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -253,7 +254,9 @@ func testScimUserResourceDestroy(s *terraform.State) error {
 		if rs.Type != "databricks_scim_user" {
 			continue
 		}
-		_, err := NewUsersAPI(client).Read(rs.Primary.ID)
+		ctx := context.Background()
+		usersAPI := NewUsersAPI(ctx, client)
+		_, err := usersAPI.Read(rs.Primary.ID)
 		if err != nil {
 			return nil
 		}
@@ -281,8 +284,10 @@ func testScimUserResourceExists(n string, user *ScimUser, t *testing.T) resource
 		}
 
 		// retrieve the configured client from the test setup
-		conn := common.CommonEnvironmentClient()
-		resp, err := NewUsersAPI(conn).Read(rs.Primary.ID)
+		client := common.CommonEnvironmentClient()
+		ctx := context.Background()
+		usersAPI := NewUsersAPI(ctx, client)
+		resp, err := usersAPI.Read(rs.Primary.ID)
 		if err != nil {
 			return err
 		}

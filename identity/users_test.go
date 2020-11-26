@@ -1,6 +1,7 @@
 package identity
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -20,12 +21,14 @@ func TestAccReadUser(t *testing.T) {
 	}
 
 	client := common.NewClientFromEnvironment()
-	me, err := NewUsersAPI(client).Me()
+	ctx := context.Background()
+	usersAPI := NewUsersAPI(ctx, client)
+	me, err := usersAPI.Me()
 	assert.NoError(t, err, err)
 
 	if strings.Contains(me.UserName, "@") {
 		// let's assume that service principals do not look like emails
-		ru, err := NewUsersAPI(client).ReadR(me.ID)
+		ru, err := usersAPI.ReadR(me.ID)
 		assert.NoError(t, err, err)
 		assert.NotNil(t, ru)
 	}
@@ -43,10 +46,12 @@ func TestAccCreateRUserNonAdmin(t *testing.T) {
 		UserName:           fmt.Sprintf("test+%s@example.com", randomName),
 		AllowClusterCreate: true,
 	}
-	meh, err := NewUsersAPI(client).CreateR(given)
+	ctx := context.Background()
+	usersAPI := NewUsersAPI(ctx, client)
+	meh, err := usersAPI.CreateR(given)
 	assert.NoError(t, err, err)
 
-	ru, err := NewUsersAPI(client).ReadR(meh.ID)
+	ru, err := usersAPI.ReadR(meh.ID)
 	assert.NoError(t, err, err)
 	assert.NotNil(t, ru)
 
@@ -62,21 +67,23 @@ func TestAccCreateUser(t *testing.T) {
 
 	client := common.NewClientFromEnvironment()
 	randomName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	user, err := NewUsersAPI(client).Create(
+	ctx := context.Background()
+	usersAPI := NewUsersAPI(ctx, client)
+	user, err := usersAPI.Create(
 		fmt.Sprintf("test+%s@example.com", randomName), "Display Name", nil, nil)
 	assert.NoError(t, err, err)
 	assert.True(t, len(user.ID) > 0, "User id is empty")
 	idToDelete := user.ID
 	defer func() {
-		err := NewUsersAPI(client).Delete(idToDelete)
+		err := usersAPI.Delete(idToDelete)
 		assert.NoError(t, err, err)
 	}()
 
-	user, err = NewUsersAPI(client).Read(user.ID)
+	user, err = usersAPI.Read(user.ID)
 	t.Log(user)
 	assert.NoError(t, err, err)
 
-	err = NewUsersAPI(client).Update(user.ID, fmt.Sprintf("updated+%s@example.com", randomName),
+	err = usersAPI.Update(user.ID, fmt.Sprintf("updated+%s@example.com", randomName),
 		"Test User", []string{string(AllowClusterCreateEntitlement)}, nil)
 	//t.Log(user)
 	assert.NoError(t, err, err)
@@ -90,19 +97,21 @@ func TestAccCreateAdminUser(t *testing.T) {
 	client := common.NewClientFromEnvironment()
 
 	randomName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	user, err := NewUsersAPI(client).Create(
+	ctx := context.Background()
+	usersAPI := NewUsersAPI(ctx, client)
+	user, err := usersAPI.Create(
 		fmt.Sprintf("terraform+%s@example.com", randomName),
 		"Terra "+randomName, nil, nil)
 	assert.NoError(t, err, err)
 	assert.True(t, len(user.ID) > 0, "User id is empty")
 	idToDelete := user.ID
 	defer func() {
-		err := NewUsersAPI(client).Delete(idToDelete)
+		err := usersAPI.Delete(idToDelete)
 		assert.NoError(t, err, err)
 	}()
 	log.Println(idToDelete)
 
-	user, err = NewUsersAPI(client).Read(user.ID)
+	user, err = usersAPI.Read(user.ID)
 	t.Log(user)
 	assert.NoError(t, err, err)
 
@@ -111,18 +120,18 @@ func TestAccCreateAdminUser(t *testing.T) {
 
 	adminGroupID := group.ID
 
-	err = NewUsersAPI(client).SetUserAsAdmin(user.ID, adminGroupID)
+	err = usersAPI.SetUserAsAdmin(user.ID, adminGroupID)
 	assert.NoError(t, err, err)
 
-	userIsAdmin, err := NewUsersAPI(client).VerifyUserAsAdmin(user.ID, adminGroupID)
+	userIsAdmin, err := usersAPI.VerifyUserAsAdmin(user.ID, adminGroupID)
 	assert.NoError(t, err, err)
 	assert.True(t, userIsAdmin == true)
 	log.Println(userIsAdmin)
 
-	err = NewUsersAPI(client).RemoveUserAsAdmin(user.ID, adminGroupID)
+	err = usersAPI.RemoveUserAsAdmin(user.ID, adminGroupID)
 	assert.NoError(t, err, err)
 
-	userIsAdmin, err = NewUsersAPI(client).VerifyUserAsAdmin(user.ID, adminGroupID)
+	userIsAdmin, err = usersAPI.VerifyUserAsAdmin(user.ID, adminGroupID)
 	assert.NoError(t, err, err)
 	assert.True(t, userIsAdmin == false)
 	log.Println(userIsAdmin)
@@ -135,21 +144,23 @@ func TestAccRoleDifferences(t *testing.T) {
 	client := common.NewClientFromEnvironment()
 
 	randomName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	user, err := NewUsersAPI(client).Create(
+	ctx := context.Background()
+	usersAPI := NewUsersAPI(ctx, client)
+	user, err := usersAPI.Create(
 		fmt.Sprintf("terraform+%s@example.com", randomName),
 		"Terra "+randomName, nil, nil)
 	assert.NoError(t, err, err)
 	assert.True(t, len(user.ID) > 0, "User id is empty")
 	idToDelete := user.ID
 
-	user, err = NewUsersAPI(client).Read(idToDelete)
+	user, err = usersAPI.Read(idToDelete)
 	assert.NoError(t, err, err)
 	t.Log(user.Roles)
 	t.Log(user.Groups)
 	t.Log(user.InheritedRoles)
 	t.Log(user.UnInheritedRoles)
 
-	err = NewUsersAPI(client).Delete(idToDelete)
+	err = usersAPI.Delete(idToDelete)
 	assert.NoError(t, err, err)
 }
 
@@ -173,11 +184,13 @@ func TestUsersFilter(t *testing.T) {
 	})
 	require.NoError(t, err)
 	defer server.Close()
-	users, err := NewUsersAPI(client).Filter("")
+	ctx := context.Background()
+	usersAPI := NewUsersAPI(ctx, client)
+	users, err := usersAPI.Filter("")
 	require.NoError(t, err)
 	assert.Len(t, users, 1)
 
-	users, err = NewUsersAPI(client).Filter("userName eq somebody")
+	users, err = usersAPI.Filter("userName eq somebody")
 	require.NoError(t, err)
 	assert.Len(t, users, 0)
 }
