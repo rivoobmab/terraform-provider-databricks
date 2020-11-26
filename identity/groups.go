@@ -1,6 +1,7 @@
 package identity
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -10,7 +11,7 @@ import (
 )
 
 // NewGroupsAPI creates GroupsAPI instance from provider meta
-func NewGroupsAPI(m interface{}) GroupsAPI {
+func NewGroupsAPI(ctx context.Context, m interface{}) GroupsAPI {
 	return GroupsAPI{client: m.(*common.DatabricksClient)}
 }
 

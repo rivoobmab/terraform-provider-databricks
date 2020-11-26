@@ -1,6 +1,7 @@
 package identity
 
 import (
+	"context"
 	"log"
 
 	"github.com/databrickslabs/databricks-terraform/common"
@@ -87,7 +88,8 @@ func resourceScimGroupCreate(d *schema.ResourceData, m interface{}) error {
 		entitlements = convertInterfaceSliceToStringSlice(rEntitlements.(*schema.Set).List())
 	}
 
-	group, err := NewGroupsAPI(client).Create(groupName, members, roles, entitlements)
+	ctx := context.Background()
+	group, err := NewGroupsAPI(ctx, client).Create(groupName, members, roles, entitlements)
 	if err != nil {
 		return err
 	}
@@ -116,7 +118,8 @@ func getListOfEntitlements(entitlementList []EntitlementsListItem) []string {
 func resourceScimGroupRead(d *schema.ResourceData, m interface{}) error {
 	id := d.Id()
 	client := m.(*common.DatabricksClient)
-	group, err := NewGroupsAPI(client).Read(id)
+	ctx := context.Background()
+	group, err := NewGroupsAPI(ctx, client).Read(id)
 	if err != nil {
 		if e, ok := err.(common.APIError); ok && e.IsMissing() {
 			log.Printf("missing resource due to error: %v\n", e)
@@ -172,8 +175,8 @@ func diff(sliceA []string, sliceB []string) []string {
 func resourceScimGroupUpdate(d *schema.ResourceData, m interface{}) error {
 	id := d.Id()
 	client := m.(*common.DatabricksClient)
-
-	group, err := NewGroupsAPI(client).Read(id)
+	ctx := context.Background()
+	group, err := NewGroupsAPI(ctx, client).Read(id)
 	if err != nil {
 		return err
 	}
@@ -193,7 +196,7 @@ func resourceScimGroupUpdate(d *schema.ResourceData, m interface{}) error {
 		// We need to check if the group has any members especially if addMembers is 0 and removeMembers is not 0
 		// A user might be deleted and a patch operation on an empty group will fail
 		if len(group.Members) > 0 || len(addMembers) > 0 {
-			err = NewGroupsAPI(client).Patch(group.ID, addMembers, removeMembers, GroupMembersPath)
+			err = NewGroupsAPI(ctx, client).Patch(group.ID, addMembers, removeMembers, GroupMembersPath)
 			if err != nil {
 				return err
 			}
@@ -210,7 +213,7 @@ func resourceScimGroupUpdate(d *schema.ResourceData, m interface{}) error {
 		log.Println(addRoles)
 		log.Println("remove roles")
 		log.Println(removeRoles)
-		err = NewGroupsAPI(client).Patch(group.ID, addRoles, removeRoles, GroupRolesPath)
+		err = NewGroupsAPI(ctx, client).Patch(group.ID, addRoles, removeRoles, GroupRolesPath)
 		if err != nil {
 			return err
 		}
@@ -226,7 +229,7 @@ func resourceScimGroupUpdate(d *schema.ResourceData, m interface{}) error {
 		log.Println(addEntitlements)
 		log.Println("remove entitlements")
 		log.Println(removeEntitlements)
-		err = NewGroupsAPI(client).Patch(group.ID, addEntitlements, removeEntitlements, GroupEntitlementsPath)
+		err = NewGroupsAPI(ctx, client).Patch(group.ID, addEntitlements, removeEntitlements, GroupEntitlementsPath)
 		if err != nil {
 			return err
 		}
@@ -238,6 +241,7 @@ func resourceScimGroupUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceScimGroupDelete(d *schema.ResourceData, m interface{}) error {
 	id := d.Id()
 	client := m.(*common.DatabricksClient)
-	err := NewGroupsAPI(client).Delete(id)
+	ctx := context.Background()
+	err := NewGroupsAPI(ctx, client).Delete(id)
 	return err
 }

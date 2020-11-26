@@ -26,11 +26,12 @@ func TestAccGroup(t *testing.T) {
 	assert.NoError(t, err, err)
 
 	//Create empty group
-	group, err := NewGroupsAPI(client).Create("my-test-group", nil, nil, nil)
+	groupsAPI := NewGroupsAPI(ctx, client)
+	group, err := groupsAPI.Create("my-test-group", nil, nil, nil)
 	assert.NoError(t, err, err)
 
 	defer func() {
-		err := NewGroupsAPI(client).Delete(group.ID)
+		err := groupsAPI.Delete(group.ID)
 		assert.NoError(t, err, err)
 		err = usersAPI.Delete(user.ID)
 		assert.NoError(t, err, err)
@@ -38,16 +39,16 @@ func TestAccGroup(t *testing.T) {
 		assert.NoError(t, err, err)
 	}()
 
-	group, err = NewGroupsAPI(client).Read(group.ID)
+	group, err = groupsAPI.Read(group.ID)
 	assert.NoError(t, err, err)
 
-	err = NewGroupsAPI(client).Patch(group.ID, []string{user.ID, user2.ID}, nil, GroupMembersPath)
+	err = groupsAPI.Patch(group.ID, []string{user.ID, user2.ID}, nil, GroupMembersPath)
 	assert.NoError(t, err, err)
 
-	err = NewGroupsAPI(client).Patch(group.ID, nil, []string{user.ID}, GroupMembersPath)
+	err = groupsAPI.Patch(group.ID, nil, []string{user.ID}, GroupMembersPath)
 	assert.NoError(t, err, err)
 
-	group, err = NewGroupsAPI(client).Read(group.ID)
+	group, err = groupsAPI.Read(group.ID)
 	assert.NoError(t, err, err)
 	assert.True(t, len(group.Members) == 1)
 	assert.True(t, group.Members[0].Value == user2.ID)
@@ -58,7 +59,7 @@ func TestAccFilterGroup(t *testing.T) {
 		t.Skip("skipping integration test in short mode.")
 	}
 	client := common.NewClientFromEnvironment()
-	groupList, err := NewGroupsAPI(client).Filter("displayName eq admins")
+	groupList, err := groupsAPI.Filter("displayName eq admins")
 	assert.NoError(t, err, err)
 	assert.NotNil(t, groupList)
 	assert.Len(t, groupList.Resources, 1)
@@ -69,7 +70,7 @@ func TestAccGetAdminGroup(t *testing.T) {
 		t.Skip("skipping integration test in short mode.")
 	}
 	client := common.NewClientFromEnvironment()
-	grp, err := NewGroupsAPI(client).GetAdminGroup()
+	grp, err := groupsAPI.GetAdminGroup()
 	assert.NoError(t, err, err)
 	assert.NotNil(t, grp)
 	assert.True(t, len(grp.ID) > 0)
@@ -89,29 +90,29 @@ func TestAwsAccReadInheritedRolesFromGroup(t *testing.T) {
 		assert.NoError(t, err, err)
 	}()
 
-	myTestGroup, err := NewGroupsAPI(client).Create("my-test-group", nil, nil, nil)
+	myTestGroup, err := groupsAPI.Create("my-test-group", nil, nil, nil)
 	assert.NoError(t, err, err)
 
 	defer func() {
-		err := NewGroupsAPI(client).Delete(myTestGroup.ID)
+		err := groupsAPI.Delete(myTestGroup.ID)
 		assert.NoError(t, err, err)
 	}()
 
-	myTestSubGroup, err := NewGroupsAPI(client).Create("my-test-sub-group", nil, nil, nil)
+	myTestSubGroup, err := groupsAPI.Create("my-test-sub-group", nil, nil, nil)
 	assert.NoError(t, err, err)
 
 	defer func() {
-		err := NewGroupsAPI(client).Delete(myTestSubGroup.ID)
+		err := groupsAPI.Delete(myTestSubGroup.ID)
 		assert.NoError(t, err, err)
 	}()
 
-	err = NewGroupsAPI(client).Patch(myTestGroup.ID, []string{myTestRole}, nil, GroupRolesPath)
+	err = groupsAPI.Patch(myTestGroup.ID, []string{myTestRole}, nil, GroupRolesPath)
 	assert.NoError(t, err, err)
 
-	err = NewGroupsAPI(client).Patch(myTestGroup.ID, []string{myTestSubGroup.ID}, nil, GroupMembersPath)
+	err = groupsAPI.Patch(myTestGroup.ID, []string{myTestSubGroup.ID}, nil, GroupMembersPath)
 	assert.NoError(t, err, err)
 
-	myTestGroupInfo, err := NewGroupsAPI(client).Read(myTestSubGroup.ID)
+	myTestGroupInfo, err := groupsAPI.Read(myTestSubGroup.ID)
 	assert.NoError(t, err, err)
 
 	assert.True(t, len(myTestGroupInfo.InheritedRoles) > 0)
@@ -145,11 +146,11 @@ func TestGroupsFilter(t *testing.T) {
 	})
 	require.NoError(t, err)
 	defer server.Close()
-	groups, err := NewGroupsAPI(client).Filter("")
+	groups, err := groupsAPI.Filter("")
 	require.NoError(t, err)
 	assert.Len(t, groups.Resources, 1)
 
-	groups, err = NewGroupsAPI(client).Filter("displayName eq somebody")
+	groups, err = groupsAPI.Filter("displayName eq somebody")
 	require.NoError(t, err)
 	assert.Len(t, groups.Resources, 0)
 }

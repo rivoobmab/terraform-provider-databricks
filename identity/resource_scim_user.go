@@ -83,7 +83,8 @@ func resourceScimUserCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if setAdmin {
-		adminGroup, err := NewGroupsAPI(client).GetAdminGroup()
+		ctx := context.Background()
+		adminGroup, err := NewGroupsAPI(ctx, client).GetAdminGroup()
 		if err != nil {
 			return err
 		}
@@ -120,7 +121,7 @@ func resourceScimUserRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	adminGroup, err := NewGroupsAPI(client).GetAdminGroup()
+	adminGroup, err := NewGroupsAPI(ctx, client).GetAdminGroup()
 	if err != nil {
 		return err
 	}
@@ -203,9 +204,10 @@ func resourceScimUserUpdate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	if d.HasChange("set_admin") {
+		ctx := context.Background()
 		setAdmin := d.Get("set_admin").(bool)
 		if setAdmin {
-			adminGroup, err := NewGroupsAPI(client).GetAdminGroup()
+			adminGroup, err := NewGroupsAPI(ctx, client).GetAdminGroup()
 			if err != nil {
 				return err
 			}
@@ -214,7 +216,7 @@ func resourceScimUserUpdate(d *schema.ResourceData, m interface{}) error {
 				return err
 			}
 		} else {
-			adminGroup, err := NewGroupsAPI(client).GetAdminGroup()
+			adminGroup, err := NewGroupsAPI(ctx, client).GetAdminGroup()
 			if err != nil {
 				return err
 			}

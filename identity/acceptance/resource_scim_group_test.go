@@ -91,7 +91,8 @@ func TestAccScimGroupResource(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					err := NewGroupsAPI(common.CommonEnvironmentClient()).Delete(g.ID)
+					ctx := context.Background()
+					err := NewGroupsAPI(ctx, common.CommonEnvironmentClient()).Delete(g.ID)
 					assert.NoError(t, err, err)
 				},
 				// use a dynamic configuration with the random name from above
@@ -170,7 +171,8 @@ func testScimGroupResourceExists(n string, group *ScimGroup, t *testing.T) resou
 
 		// retrieve the configured client from the test setup
 		conn := common.CommonEnvironmentClient()
-		resp, err := NewGroupsAPI(conn).Read(rs.Primary.ID)
+		ctx := context.Background()
+		resp, err := NewGroupsAPI(ctx, conn).Read(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
