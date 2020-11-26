@@ -4,6 +4,7 @@
 
 **Behavior changes**
 * `databricks_notebook` got behavior changed. TODO: handle RESOURCE_ALREADY_EXISTS for mkdirs
+* `skip_validation` from `databricks_instance_profile` was removed and is always set to `true`
 
 ## 0.2.9
 

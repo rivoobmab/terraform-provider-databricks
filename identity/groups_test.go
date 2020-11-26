@@ -59,6 +59,8 @@ func TestAccFilterGroup(t *testing.T) {
 		t.Skip("skipping integration test in short mode.")
 	}
 	client := common.NewClientFromEnvironment()
+	ctx := context.Background()
+	groupsAPI := NewGroupsAPI(ctx, client)
 	groupList, err := groupsAPI.Filter("displayName eq admins")
 	assert.NoError(t, err, err)
 	assert.NotNil(t, groupList)
@@ -70,6 +72,8 @@ func TestAccGetAdminGroup(t *testing.T) {
 		t.Skip("skipping integration test in short mode.")
 	}
 	client := common.NewClientFromEnvironment()
+	ctx := context.Background()
+	groupsAPI := NewGroupsAPI(ctx, client)
 	grp, err := groupsAPI.GetAdminGroup()
 	assert.NoError(t, err, err)
 	assert.NotNil(t, grp)
@@ -83,13 +87,15 @@ func TestAwsAccReadInheritedRolesFromGroup(t *testing.T) {
 	client := common.NewClientFromEnvironment()
 	// TODO: pass IAM role with ENV variable
 	myTestRole := "arn:aws:iam::123456789012:instance-profile/go-sdk-integeration-testing"
-	err := NewInstanceProfilesAPI(client).Create(myTestRole, true)
+	ctx := context.Background()
+	err := NewInstanceProfilesAPI(ctx, client).Create(myTestRole, true)
 	assert.NoError(t, err, err)
 	defer func() {
-		err := NewInstanceProfilesAPI(client).Delete(myTestRole)
+		err := NewInstanceProfilesAPI(ctx, client).Delete(myTestRole)
 		assert.NoError(t, err, err)
 	}()
 
+	groupsAPI := NewGroupsAPI(ctx, client)
 	myTestGroup, err := groupsAPI.Create("my-test-group", nil, nil, nil)
 	assert.NoError(t, err, err)
 
@@ -146,6 +152,8 @@ func TestGroupsFilter(t *testing.T) {
 	})
 	require.NoError(t, err)
 	defer server.Close()
+	ctx := context.Background()
+	groupsAPI := NewGroupsAPI(ctx, client)
 	groups, err := groupsAPI.Filter("")
 	require.NoError(t, err)
 	assert.Len(t, groups.Resources, 1)
