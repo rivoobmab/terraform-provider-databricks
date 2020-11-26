@@ -3,7 +3,7 @@
 ## 0.3.0
 
 **Behavior changes**
-* `databricks_notebook` got behavior changed
+* `databricks_notebook` got behavior changed. TODO: handle RESOURCE_ALREADY_EXISTS for mkdirs
 
 ## 0.2.9
 
