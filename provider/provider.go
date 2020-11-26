@@ -22,7 +22,7 @@ import (
 
 // DatabricksProvider returns the entire terraform provider object
 func DatabricksProvider() *schema.Provider {
-	return &schema.Provider{
+	p := &schema.Provider{
 		DataSourcesMap: map[string]*schema.Resource{
 			"databricks_aws_crossaccount_policy": access.DataAwsCrossAccountRolicy(),
 			"databricks_aws_assume_role_policy":  access.DataAwsAssumeRolePolicy(),
@@ -445,6 +445,8 @@ func DatabricksProvider() *schema.Provider {
 			return &pc, nil
 		},
 	}
+	addContextToAllResources(p)
+	return p
 }
 
 func durationToSecondsString(duration time.Duration) string {
