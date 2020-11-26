@@ -2,9 +2,12 @@
 
 ## 0.3.0
 
+* Added propagation of terraform version to `User-Agent` header, along with type of resource used.
+
 **Behavior changes**
-* `databricks_notebook` got behavior changed. TODO: handle RESOURCE_ALREADY_EXISTS for mkdirs
-* `skip_validation` from `databricks_instance_profile` was removed and is always set to `true`
+* `format`, `overwrite`, and `mkdirs` were removed from `databricks_notebook`. TODO: handle RESOURCE_ALREADY_EXISTS for mkdirs.
+* `skip_validation` from `databricks_instance_profile` was removed and is always set to `true` for subsequent requests.
+* `databricks_mws_workspace` got `verify_workspace_runnning` removed and now validates all every deployment. In case deployment failed, it removes workspace that failed and returns error message with explanation.
 
 ## 0.2.9
 
