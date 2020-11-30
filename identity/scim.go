@@ -5,10 +5,11 @@ type URN string
 
 // Possible schema URNs for the Databricks SCIM api
 const (
-	UserSchema          URN = "urn:ietf:params:scim:schemas:core:2.0:User"
-	WorkspaceUserSchema URN = "urn:ietf:params:scim:schemas:extension:workspace:2.0:User"
-	PatchOp             URN = "urn:ietf:params:scim:api:messages:2.0:PatchOp"
-	GroupSchema         URN = "urn:ietf:params:scim:schemas:core:2.0:Group"
+	UserSchema             URN = "urn:ietf:params:scim:schemas:core:2.0:User"
+	ServicePrincipalSchema URN = "urn:ietf:params:scim:schemas:core:2.0:ServicePrincipal"
+	WorkspaceUserSchema    URN = "urn:ietf:params:scim:schemas:extension:workspace:2.0:User"
+	PatchOp                URN = "urn:ietf:params:scim:api:messages:2.0:PatchOp"
+	GroupSchema            URN = "urn:ietf:params:scim:schemas:core:2.0:Group"
 )
 
 // MembersValue is a list of value items for the members path
@@ -182,6 +183,18 @@ func (u ScimUser) HasRole(role string) bool {
 	return false
 }
 
+// ScimServicePrincipal is a struct that contains all the information about a SCIM service principal
+type ScimServicePrincipal struct {
+	ID            string                 `json:"id,omitempty"`
+	ApplicationId string                 `json:"applicationId,omitempty"`
+	DisplayName   string                 `json:"displayName,omitempty"`
+	Active        bool                   `json:"active,omitempty"`
+	Schemas       []URN                  `json:"schemas,omitempty"`
+	Groups        []GroupsListItem       `json:"groups,omitempty"`
+	Name          map[string]string      `json:"name,omitempty"`
+	Entitlements  []EntitlementsListItem `json:"entitlements,omitempty"`
+}
+
 // UserList contains a list of Users fetched from a list api call from SCIM api
 type UserList struct {
 	TotalResults int32      `json:"totalResults,omitempty"`
@@ -189,6 +202,15 @@ type UserList struct {
 	ItemsPerPage int32      `json:"itemsPerPage,omitempty"`
 	Schemas      []URN      `json:"schemas,omitempty"`
 	Resources    []ScimUser `json:"resources,omitempty"`
+}
+
+// ServicePrincipalList contains a list of ServicePrincipals fetched from a list api call from SCIM api
+type ServicePrincipalList struct {
+	TotalResults int32                  `json:"totalResults,omitempty"`
+	StartIndex   int32                  `json:"startIndex,omitempty"`
+	ItemsPerPage int32                  `json:"itemsPerPage,omitempty"`
+	Schemas      []URN                  `json:"schemas,omitempty"`
+	Resources    []ScimServicePrincipal `json:"resources,omitempty"`
 }
 
 // UserPatchRequest is a struct that contains all the information for a PATCH request to the SCIM users api
